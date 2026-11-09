@@ -22,6 +22,19 @@ Edge 下载保留确认框的补丁。按当前用户安装，默认开机自启
 
 ---
 
+## 下载
+
+从 [Releases](https://github.com/Hungry-M/stillkeep/releases) 取 `StillKeep-0.1.0.zip`，
+校验后再解压：
+
+```powershell
+Get-FileHash .\StillKeep-0.1.0.zip -Algorithm SHA256
+```
+
+把结果和 `SHA256SUMS.txt` 里的值比对，一致再用。
+
+---
+
 ## 安装
 
 双击 `install.cmd`。不需要管理员权限。
