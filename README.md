@@ -4,6 +4,9 @@ Edge 下载保留确认框的补丁。按当前用户安装，默认开机自启
 
 适用：Edge `157.0.4341.42` / Windows 10 `19045`。
 
+> 非官方项目，与 Microsoft 无关。补丁在 Windows 输入层工作，不修改 Edge 的任何文件。
+> 文档仅提供中文（This project is documented in Chinese only）。
+
 ---
 
 ## 它修什么
@@ -104,6 +107,10 @@ StillKeep/
 ├─ VERSION
 ├─ LICENSE
 ├─ README.md
+├─ CHANGELOG.md
+├─ CONTRIBUTING.md
+├─ SECURITY.md
+├─ THIRD_PARTY_NOTICES.md
 └─ src/
    ├─ StillKeep.ahk    worker：窗口判定 + 点按还原
    ├─ StillKeepWatch.ahk    守护：随 Edge 启停 worker
@@ -159,3 +166,24 @@ StillKeep/
 > 该控件存在但无视觉呈现，在其上按 Enter 同样删除；而按 ↓ 能正常打开
 > 下拉菜单（内有「仍然保留」）。同一控件、鼠标走销毁分支、键盘走菜单分支。
 > 相同保留操作在 edge://downloads 页面内正常。
+
+---
+
+## 已知限制
+
+- 尺寸判定是启发式的。Edge 若新增同尺寸的弹层，可能误判；误判的后果是拦截不生效
+  或误发 `Esc`，**不会删文件**。
+- Edge 更新后窗口结构可能变，补丁可能失效。失效时它不动作，不会把浏览器搞坏。
+- 只在 Edge `157.0.4341.42` / Windows 10 `19045` 上验证过，其他版本未测。
+- 安装包没有代码签名，Windows 可能提示「未知发布者」。这是预期行为，不是安装失败。
+- 其他 Chromium 浏览器未测试，理论上同样的问题可以用同一思路处理。
+
+## 许可
+
+[MIT](LICENSE)，允许商业使用与修改；再分发需保留版权与许可声明。
+
+捆绑的 AutoHotkey 解释器是 GPL-2.0，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 贡献
+
+见 [CONTRIBUTING.md](CONTRIBUTING.md)。提交需带 DCO 签署（`git commit -s`）。

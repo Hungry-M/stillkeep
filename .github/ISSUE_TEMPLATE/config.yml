@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞
+    url: https://github.com/Hungry-M/stillkeep/security/advisories/new
+    about: 私密报告，不要开公开 issue

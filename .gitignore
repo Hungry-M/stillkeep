@@ -1,4 +1,6 @@
-﻿*.log
+*.log
 *.pid
 dist/
-_tt*/
+build/
+_tmp/
+*.zip

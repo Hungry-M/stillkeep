@@ -1,0 +1,25 @@
+name: 功能建议
+description: 希望补丁覆盖别的场景或别的浏览器
+labels: [enhancement]
+body:
+  - type: textarea
+    id: case
+    attributes:
+      label: 场景
+      description: 什么程序、什么窗口、什么行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: expectation
+    attributes:
+      label: 你希望它怎么做
+    validations:
+      required: true
+
+  - type: textarea
+    id: probe
+    attributes:
+      label: 窗口信息（可选）
+      description: 打开目标窗口后按 Ctrl+Alt+F12，把日志里的 probe 行贴在这里
+      render: text
