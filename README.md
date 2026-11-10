@@ -24,58 +24,76 @@ Edge 下载保留确认框的补丁。按当前用户安装，默认开机自启
 
 ## 下载
 
-从 [Releases](https://github.com/Hungry-M/stillkeep/releases) 取 `StillKeep-0.1.0.zip`，
-校验后再解压：
+从 [Releases](https://github.com/Hungry-M/stillkeep/releases) 取其中一个：
+
+| 资产 | 用途 |
+| --- | --- |
+| `StillKeep-0.1.0-Setup.exe` | 安装器（推荐）。装进 `%LOCALAPPDATA%\Programs\StillKeep`，带卸载项、开始菜单、开机自启 |
+| `StillKeep-0.1.0-portable.zip` | 解压即用，不写注册表、不装服务。解压后跑 `run.cmd` |
+
+校验后再用：
 
 ```powershell
-Get-FileHash .\StillKeep-0.1.0.zip -Algorithm SHA256
+Get-FileHash .\StillKeep-0.1.0-Setup.exe -Algorithm SHA256
 ```
 
-把结果和 `SHA256SUMS.txt` 里的值比对，一致再用。
+把结果和 `SHA256SUMS.txt` 里的值比对，一致再运行。
 
 ---
 
 ## 安装
 
-双击 `install.cmd`。不需要管理员权限。
+双击 `StillKeep-0.1.0-Setup.exe`。按当前用户安装，不需要管理员权限。
 
 - 安装目录：`%LOCALAPPDATA%\Programs\StillKeep`
-- 数据目录：`%LOCALAPPDATA%\StillKeep`（日志、备份）
-- 同时写入：开始菜单快捷方式、`HKCU` 卸载项、开机自启（`HKCU\...\Run`）
-- 安装完成后立即启动守护进程
+- 数据目录：`%LOCALAPPDATA%\StillKeep`（日志）
+- 同时写入：开始菜单快捷方式、`HKCU` 卸载项
+- **开机自启默认勾选**（`HKCU\...\Run`）；想关就取消勾选，或者用 `/TASKS=""` 静默安装
 
-参数：
+静默安装：
 
 ```powershell
-install.cmd -NoAutostart          # 不写自启动
+StillKeep-0.1.0-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+StillKeep-0.1.0-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /TASKS=""   # 不自启
+```
+
+> 不要从受限终端或沙箱里启动安装器。子进程会继承受限令牌，创建 `%APPDATA%`
+> 和 `HKCU` 时被拒（`Error 5`），安装会回滚。请从资源管理器双击。
+
+### 免安装
+
+解压 `portable.zip`，双击 `run.cmd`。它只启动守护进程，不写注册表、不建快捷方式。
+
+### 从源码安装（不用安装器）
+
+仓库源码里带 `install.cmd` / `uninstall.cmd`，参数：
+
+```powershell
+install.cmd -NoAutostart
 install.cmd -Silent -ResultFile r.json
 install.cmd -InstallDir D:\Apps\StillKeep
 ```
-
-> 不要在受限终端/沙箱里运行安装器。请从资源管理器双击，
-> 否则可能继承受限令牌，写 `%LOCALAPPDATA%` 被拒。
 
 ---
 
 ## 卸载
 
-三种入口，效果一样：
+**安装器装的**：设置 → 应用 → 安装的应用 → StillKeep，或开始菜单里的「卸载 StillKeep」。
 
-1. 设置 → 应用 → 安装的应用 → StillKeep
-2. 安装目录里的 `uninstall.cmd`
-3. `uninstall.cmd -Yes`（静默）
+Inno 卸载器会先调用 `uninstall-cleanup.ps1`：只结束路径在本程序目录下的
+`AutoHotkey64.exe`，并清掉 `Run` 值；然后再删文件、快捷方式和卸载项。
 
-卸载顺序：停进程 → 删自启动 → 删卸载项 → 删快捷方式 → 删程序目录 → 清数据目录。
+**脚本装的**：安装目录里的 `uninstall.cmd`，或 `uninstall.cmd -Yes`（静默）。
 
-一个实现细节：注册表里的 `UninstallString` **直接调 powershell 跑 `uninstall.ps1`**，
-不经过 `.cmd`。因为批处理删掉自己所在的目录后，cmd 读不到后续行，会报
-`The system cannot find the path specified.` 并返回 1（删是删掉了，但退出码是错的）。
-`uninstall.cmd` 保留给双击用，它只做一件事：把 PowerShell 分离出去，然后立刻退出。
+脚本版有个实现细节：注册表里的 `UninstallString` **直接调 powershell 跑
+`uninstall.ps1`**，不经过 `.cmd`。因为批处理删掉自己所在的目录后，cmd 读不到后续行，
+会报 `The system cannot find the path specified.` 并返回 1（删是删掉了，但退出码是错的）。
+`uninstall.cmd` 只做一件事：把 PowerShell 分离出去，然后立刻退出。
 
-- 只删除能证明属于本程序的东西：卸载项里的 `InstallLocation`、目录里的
-  `StillKeepWatch.ahk` 标记、快捷方式 target。任一不匹配就跳过，不猜。
-- 备份默认保留在 `%LOCALAPPDATA%\StillKeep\backups`；
-  `uninstall.cmd -Yes -RemoveBackups` 才一并删除。
+- 只删除能证明属于本程序的东西：安装位置、目录里的 `StillKeepWatch.ahk` 标记、
+  快捷方式 target。任一不匹配就跳过，不猜。
+- 日志目录 `%LOCALAPPDATA%\StillKeep` 默认保留；脚本版卸载的备份也默认保留，
+  `-RemoveBackups` 才一并删除。
 
 ---
 
@@ -124,6 +142,11 @@ StillKeep/
 ├─ CONTRIBUTING.md
 ├─ SECURITY.md
 ├─ THIRD_PARTY_NOTICES.md
+├─ packaging/
+│  ├─ stillkeep.iss          Inno Setup 脚本
+│  ├─ build.ps1              构建 Setup.exe + portable.zip
+│  ├─ uninstall-cleanup.ps1  卸载前停进程
+│  └─ languages/             安装器界面用的简体中文语言文件
 └─ src/
    ├─ StillKeep.ahk    worker：窗口判定 + 点按还原
    ├─ StillKeepWatch.ahk    守护：随 Edge 启停 worker

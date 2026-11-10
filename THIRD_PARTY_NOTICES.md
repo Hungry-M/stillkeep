@@ -17,6 +17,18 @@ It bundles one third-party component.
 分发的二进制未做修改。因为它以 GPL-2.0 授权，对应源码可从上面的上游地址获取；
 完整许可证文本已随仓库提供。
 
+## Inno Setup（仅构建期，产物内含其语言文本）
+
+| | |
+| --- | --- |
+| 组件 | Inno Setup 简体中文语言文件 |
+| 文件 | `packaging/languages/ChineseSimplified.isl` |
+| 许可证 | 随 Inno Setup 分发，遵循 Inno Setup License |
+| 上游 | <https://github.com/jrsoftware/issrc> |
+
+只用于生成 `Setup.exe` 的安装界面文本，不参与运行时。
+
 ## 构建与运行依赖
 
-无额外依赖。安装器与卸载器使用 Windows 自带的 PowerShell 5.1 和 cmd.exe。
+无额外运行时依赖。安装器由 Inno Setup 6 生成；脚本版安装/卸载使用 Windows 自带的
+PowerShell 5.1 和 cmd.exe。
