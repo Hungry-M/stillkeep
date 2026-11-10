@@ -54,7 +54,7 @@ if (-not $SkipPortable) {
     New-Item -ItemType Directory -Force -Path $stage | Out-Null
 
     Copy-Item (Join-Path $root 'src') -Destination $stage -Recurse -Force
-    foreach ($f in 'run.cmd', 'VERSION', 'LICENSE', 'README.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md') {
+    foreach ($f in 'run.cmd', 'VERSION', 'LICENSE', 'README.md', 'README.zh.md', 'CHANGELOG.md', 'THIRD_PARTY_NOTICES.md') {
         Copy-Item (Join-Path $root $f) -Destination $stage -Force
     }
 

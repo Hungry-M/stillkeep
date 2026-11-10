@@ -1,72 +1,77 @@
 # StillKeep
 
-Edge 下载保留确认框的补丁。按当前用户安装，默认开机自启。
+A patch for Edge's download confirmation dialog. Installs per user, starts with Windows by default.
 
-适用：Edge `157.0.4341.42` / Windows 10 `19045`。
+Tested on Edge `157.0.4341.42` / Windows 10 `19045`.
 
-> 非官方项目，与 Microsoft 无关。补丁在 Windows 输入层工作，不修改 Edge 的任何文件。
-> 文档仅提供中文（This project is documented in Chinese only）。
-
----
-
-## 它修什么
-
-下载被 SmartScreen 拦下后，从工具栏下载菜单点「保留」，会弹一个确认框。
-框里 `删除 ▾` 的箭头不可见：点它执行删除，Tab 到它按 `Enter` 也执行删除，
-但按 `↓` 能正常展开菜单，里面有「仍然保留」。
-
-**同一个控件，鼠标走销毁分支，键盘 `↓` 走菜单分支。**
-
-补丁只做一件事：把点 `▾` 还原成它本来该有的行为——弹菜单，由你自己选。
-它不替你按回车，不改二进制，不关 SmartScreen。
+> Unofficial project, not affiliated with Microsoft. The patch works at the Windows input
+> layer and does not modify any Edge file.
+> [简体中文](README.zh.md) · other documents in this repo are Chinese-only for now.
 
 ---
 
-## 下载
+## What it fixes
 
-从 [Releases](https://github.com/Hungry-M/stillkeep/releases) 取其中一个：
+When SmartScreen blocks a download and you click **Keep** in the toolbar download menu, Edge
+shows a confirmation dialog. The `Delete ▾` arrow in that dialog is rendered invisible: clicking
+it deletes the file, and pressing `Enter` on it deletes too — but pressing `↓` correctly opens the
+dropdown containing **Keep anyway**.
 
-| 资产 | 用途 |
+**Same control: the mouse takes the destructive branch, `↓` takes the menu branch.**
+
+The patch does one thing: it restores what clicking `▾` was supposed to do — open the menu and let
+you decide. It never presses Enter for you, never patches binaries, never disables SmartScreen.
+
+---
+
+## Download
+
+Grab one of these from [Releases](https://github.com/Hungry-M/stillkeep/releases):
+
+| Asset | Purpose |
 | --- | --- |
-| `StillKeep-0.1.0-Setup.exe` | 安装器（推荐）。装进 `%LOCALAPPDATA%\Programs\StillKeep`，带卸载项、开始菜单、开机自启 |
-| `StillKeep-0.1.0-portable.zip` | 解压即用，不写注册表、不装服务。解压后跑 `run.cmd` |
+| `StillKeep-0.1.1-Setup.exe` | Installer (recommended). Installs to `%LOCALAPPDATA%\Programs\StillKeep` with an uninstall entry, Start Menu shortcut and autostart |
+| `StillKeep-0.1.1-portable.zip` | Extract and run. No registry, no service |
 
-校验后再用：
+Verify before running:
 
 ```powershell
-Get-FileHash .\StillKeep-0.1.0-Setup.exe -Algorithm SHA256
+Get-FileHash .\StillKeep-0.1.1-Setup.exe -Algorithm SHA256
 ```
 
-把结果和 `SHA256SUMS.txt` 里的值比对，一致再运行。
+Compare with the value in `SHA256SUMS.txt`.
 
 ---
 
-## 安装
+## Install
 
-双击 `StillKeep-0.1.0-Setup.exe`。按当前用户安装，不需要管理员权限。
+Double-click `StillKeep-0.1.1-Setup.exe`. No administrator rights required.
 
-- 安装目录：`%LOCALAPPDATA%\Programs\StillKeep`
-- 数据目录：`%LOCALAPPDATA%\StillKeep`（日志）
-- 同时写入：开始菜单快捷方式、`HKCU` 卸载项
-- **开机自启默认勾选**（`HKCU\...\Run`）；想关就取消勾选，或者用 `/TASKS=""` 静默安装
+- Install dir: `%LOCALAPPDATA%\Programs\StillKeep`
+- Data dir: `%LOCALAPPDATA%\StillKeep` (logs)
+- Writes: Start Menu shortcut, `HKCU` uninstall entry
+- **Autostart is checked by default** (`HKCU\...\Run`). Uncheck it, or pass `/TASKS=""`, to skip
 
-静默安装：
+The wizard asks for a language first (English or 简体中文).
+
+Silent install:
 
 ```powershell
-StillKeep-0.1.0-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-StillKeep-0.1.0-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /TASKS=""   # 不自启
+StillKeep-0.1.1-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+StillKeep-0.1.1-Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /TASKS=""   # no autostart
 ```
 
-> 不要从受限终端或沙箱里启动安装器。子进程会继承受限令牌，创建 `%APPDATA%`
-> 和 `HKCU` 时被拒（`Error 5`），安装会回滚。请从资源管理器双击。
+> Do not launch the installer from a restricted terminal or sandbox. Child processes inherit a
+> restricted token, creating `%APPDATA%` and `HKCU` entries fails with `Error 5`, and Inno rolls
+> the install back. Launch it from Explorer.
 
-### 免安装
+### Portable
 
-解压 `portable.zip`，双击 `run.cmd`。它只启动守护进程，不写注册表、不建快捷方式。
+Extract `portable.zip` and run `run.cmd`. It only starts the watchdog — no registry, no shortcuts.
 
-### 从源码安装（不用安装器）
+### From source (no installer)
 
-仓库源码里带 `install.cmd` / `uninstall.cmd`，参数：
+The source tree ships `install.cmd` / `uninstall.cmd`:
 
 ```powershell
 install.cmd -NoAutostart
@@ -76,150 +81,153 @@ install.cmd -InstallDir D:\Apps\StillKeep
 
 ---
 
-## 卸载
+## Uninstall
 
-**安装器装的**：设置 → 应用 → 安装的应用 → StillKeep，或开始菜单里的「卸载 StillKeep」。
+**Installed via Setup.exe**: Settings → Apps → Installed apps → StillKeep, or the Start Menu
+shortcut "卸载 StillKeep".
 
-Inno 卸载器会先调用 `uninstall-cleanup.ps1`：只结束路径在本程序目录下的
-`AutoHotkey64.exe`，并清掉 `Run` 值；然后再删文件、快捷方式和卸载项。
+The Inno uninstaller calls `uninstall-cleanup.ps1` first: it stops only the `AutoHotkey64.exe`
+processes whose path is inside the install dir, clears the `Run` value, then removes files,
+shortcuts and the uninstall entry.
 
-**脚本装的**：安装目录里的 `uninstall.cmd`，或 `uninstall.cmd -Yes`（静默）。
+**Installed from source**: `uninstall.cmd` in the install dir, or `uninstall.cmd -Yes`.
 
-脚本版有个实现细节：注册表里的 `UninstallString` **直接调 powershell 跑
-`uninstall.ps1`**，不经过 `.cmd`。因为批处理删掉自己所在的目录后，cmd 读不到后续行，
-会报 `The system cannot find the path specified.` 并返回 1（删是删掉了，但退出码是错的）。
-`uninstall.cmd` 只做一件事：把 PowerShell 分离出去，然后立刻退出。
-
-- 只删除能证明属于本程序的东西：安装位置、目录里的 `StillKeepWatch.ahk` 标记、
-  快捷方式 target。任一不匹配就跳过，不猜。
-- 日志目录 `%LOCALAPPDATA%\StillKeep` 默认保留；脚本版卸载的备份也默认保留，
-  `-RemoveBackups` 才一并删除。
+- Only provably-ours artifacts are removed: install location, the `StillKeepWatch.ahk` marker in
+  the directory, shortcut targets. Anything that does not match is skipped, never guessed.
+- The log dir `%LOCALAPPDATA%\StillKeep` is kept by default; so are backups from the script
+  uninstaller (`-RemoveBackups` removes them).
 
 ---
 
-## 自启动
+## Autostart
 
-默认写入：
+The installer writes:
 
 ```text
 HKCU\Software\Microsoft\Windows\CurrentVersion\Run
   StillKeep = "<install>\AutoHotkey64.exe" "<install>\StillKeepWatch.ahk"
 ```
 
-启动的是**守护进程**，它负责让 worker 与 Edge 共存亡：
+It starts the **watchdog**, which keeps the worker tied to Edge:
 
 ```text
-守护进程常驻
-  ├─ Edge 有窗口 → 启动 worker（真正干活的补丁）
-  └─ Edge 没窗口 → 结束 worker
+watchdog (always resident)
+  ├─ Edge has a window → start worker (the actual patch)
+  └─ no Edge window     → stop worker
 ```
 
 ---
 
-## 快捷键
+## Hotkeys
 
-| 键 | 作用 |
+| Key | Action |
 |---|---|
-| `Ctrl+Alt+K` | 叫出「仍然保留」菜单 |
-| `Ctrl+Alt+G` | 开 / 关点按拦截 |
-| `Ctrl+Alt+F12` | 探针，把 Edge 窗口信息写进日志 |
+| `Ctrl+Alt+K` | Open the "Keep anyway" menu |
+| `Ctrl+Alt+G` | Toggle click interception |
+| `Ctrl+Alt+F12` | Probe: dump Edge window info to the log |
 
 ---
 
-## 目录布局
+## Layout
 
 ```text
 StillKeep/
-├─ install.cmd          安装入口（纯 ASCII）
-├─ install.ps1          安装逻辑（UTF-8 BOM）
-├─ uninstall.cmd        卸载入口
-├─ uninstall.ps1        卸载逻辑
-├─ run.cmd              免安装试跑
+├─ install.cmd          script installer entry (pure ASCII)
+├─ install.ps1          installer logic (UTF-8 BOM)
+├─ uninstall.cmd        script uninstaller entry
+├─ uninstall.ps1        uninstaller logic
+├─ run.cmd              portable launcher
 ├─ VERSION
 ├─ LICENSE
-├─ README.md
+├─ README.md            this file
+├─ README.zh.md         Chinese README
 ├─ CHANGELOG.md
 ├─ CONTRIBUTING.md
 ├─ SECURITY.md
 ├─ THIRD_PARTY_NOTICES.md
 ├─ packaging/
-│  ├─ stillkeep.iss          Inno Setup 脚本
-│  ├─ build.ps1              构建 Setup.exe + portable.zip
-│  ├─ uninstall-cleanup.ps1  卸载前停进程
-│  └─ languages/             安装器界面用的简体中文语言文件
+│  ├─ stillkeep.iss          Inno Setup script
+│  ├─ build.ps1              builds Setup.exe + portable.zip
+│  ├─ uninstall-cleanup.ps1  stops processes before uninstall
+│  └─ languages/             installer UI language files
 └─ src/
-   ├─ StillKeep.ahk    worker：窗口判定 + 点按还原
-   ├─ StillKeepWatch.ahk    守护：随 Edge 启停 worker
-   ├─ AutoHotkey64.exe     AutoHotkey v2.0.31
+   ├─ StillKeep.ahk          worker: window matching + click remap
+   ├─ StillKeepWatch.ahk     watchdog: starts/stops worker with Edge
+   ├─ AutoHotkey64.exe       AutoHotkey v2.0.31
    └─ LICENSE-AutoHotkey.txt
 ```
 
-`.cmd` 必须是纯 ASCII + CRLF（cmd.exe 按 OEM 代码页读，中文注释会被当成命令）；
-`.ps1` 含中文时必须是 UTF-8 带 BOM（PowerShell 5.1 无 BOM 会按 ANSI 解析）。
+`.cmd` files must be pure ASCII with CRLF (cmd.exe reads them in the OEM code page; non-ASCII
+comments get parsed as commands). `.ps1` files containing non-ASCII must be UTF-8 **with BOM**
+(PowerShell 5.1 falls back to ANSI otherwise).
 
 ---
 
-## 排错
+## Troubleshooting
 
-日志：`%LOCALAPPDATA%\StillKeep\stillkeep.log`
+Log: `%LOCALAPPDATA%\StillKeep\stillkeep.log`
 
-| 行 | 含义 |
+| Line | Meaning |
 |---|---|
-| `watch: edge up -> spawn worker` | 守护进程发现 Edge，拉起 worker |
-| `watch: edge gone -> stop worker` | Edge 关闭，worker 已退出 |
-| `open-menu: menu hwnd=...` | 菜单成功展开 |
-| `open-menu: menu not found` | 没识别到菜单窗口，需调 `FindMenuWindow` 阈值 |
-| `open-menu: no dialog` | 没识别出确认框，需调 `IsKeepDialog` 判定 |
+| `watch: edge up -> spawn worker` | Watchdog saw Edge and started the worker |
+| `watch: edge gone -> stop worker` | Edge closed, worker stopped |
+| `open-menu: menu hwnd=...` | Menu opened successfully |
+| `open-menu: menu not found` | Menu window not recognised; adjust `FindMenuWindow` |
+| `open-menu: no dialog` | Confirmation dialog not recognised; adjust `IsKeepDialog` |
 
-框出现时按 `Ctrl+Alt+F12`，日志会列出所有 Edge 窗口的
-`popup / owned / rect / title`，据此调判定条件。
-
----
-
-## 验证状态
-
-**已验证**（本机实测或沙箱内流程测试）：
-
-- 故障形态，以及 `↓` 能展开菜单（「删除」和不可见控件上都成立）
-- 安装/卸载脚本在隔离目录下跑通，文件复制、目录删除、结果 JSON 正常
-- 守护进程随 Edge 拉起/停止 worker，PID 文件写入
-- `install.cmd` / `uninstall.cmd` 编码与换行符合上面两条规范
-
-**未验证**（沙箱不允许，需在你机器上确认）：
-
-- 注册表写入（`HKCU` 卸载项、`Run`）——沙箱里被拒绝（`Access to the registry key ... is denied`），代码路径未实跑
-- 开始菜单快捷方式：`WScript.Shell` 的创建/读回已单独验证通过，但写进 `%APPDATA%` 的整链未跑
-- 从「设置 → 应用」发起卸载的完整链路
+Press `Ctrl+Alt+F12` while the dialog is up; the log lists every Edge window with
+`popup / owned / rect / title`, which is what you need to tune the matching.
 
 ---
 
-## 上报
+## Verification status
 
-这个 bug 值得报给微软，`edge://feedback`：
+**Verified** (locally, or in an isolated sandbox):
 
-> 下载被 SmartScreen 拦截后，工具栏下载菜单里点「保留」弹出确认框。
-> 确认框的 `删除` 右侧下拉箭头不可见；点击该区域执行删除，Tab 焦点链中
-> 该控件存在但无视觉呈现，在其上按 Enter 同样删除；而按 ↓ 能正常打开
-> 下拉菜单（内有「仍然保留」）。同一控件、鼠标走销毁分支、键盘走菜单分支。
-> 相同保留操作在 edge://downloads 页面内正常。
+- The failure mode itself, and that `↓` opens the menu (on both "Delete" and the invisible control)
+- Watchdog starts and stops the worker as Edge opens and closes; PID file handling
+- Script installer/uninstaller run end to end in an isolated directory
+- `.cmd` / `.ps1` encoding and line endings
+- Inno script compiles; file copy stage completes
+
+**Not verified** (environment blocks it; needs a normal desktop):
+
+- Full Setup.exe install (registry + Start Menu shortcut) — their child processes are denied
+  `%APPDATA%` and `HKCU` writes here (`Error 5`), and Inno rolls back
+- Uninstall via Settings → Apps
 
 ---
 
-## 已知限制
+## Reporting upstream
 
-- 尺寸判定是启发式的。Edge 若新增同尺寸的弹层，可能误判；误判的后果是拦截不生效
-  或误发 `Esc`，**不会删文件**。
-- Edge 更新后窗口结构可能变，补丁可能失效。失效时它不动作，不会把浏览器搞坏。
-- 只在 Edge `157.0.4341.42` / Windows 10 `19045` 上验证过，其他版本未测。
-- 安装包没有代码签名，Windows 可能提示「未知发布者」。这是预期行为，不是安装失败。
-- 其他 Chromium 浏览器未测试，理论上同样的问题可以用同一思路处理。
+This bug is worth reporting to Microsoft at `edge://feedback`:
 
-## 许可
+> After SmartScreen blocks a download, clicking "Keep" in the toolbar download menu opens a
+> confirmation dialog. The dropdown arrow next to "Delete" is invisible; clicking that area
+> deletes the file, the control is present but not rendered in the Tab order, and pressing Enter
+> on it also deletes. Only ↓ opens the dropdown (which contains "Keep anyway"). One control,
+> mouse takes the destructive branch, keyboard takes the menu branch. The same keep action works
+> in edge://downloads.
 
-[MIT](LICENSE)，允许商业使用与修改；再分发需保留版权与许可声明。
+---
 
-捆绑的 AutoHotkey 解释器是 GPL-2.0，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+## Known limitations
 
-## 贡献
+- Window matching is heuristic. A new same-sized popup could be misidentified; the consequence is
+  interception doing nothing or sending `Esc`, never a deleted file.
+- An Edge update may change the window structure and break the patch. When it breaks, it stops
+  acting — it does not damage the browser.
+- Only tested on Edge `157.0.4341.42` / Windows 10 `19045`.
+- The installer is unsigned, so Windows may warn about an unknown publisher. That is expected.
+- Other Chromium browsers are untested; the same approach should apply.
 
-见 [CONTRIBUTING.md](CONTRIBUTING.md)。提交需带 DCO 签署（`git commit -s`）。
+## License
+
+[MIT](LICENSE) — commercial use and modification allowed; redistributions must keep the copyright
+and license notice.
+
+The bundled AutoHotkey interpreter is GPL-2.0; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Commits need a DCO sign-off (`git commit -s`).
